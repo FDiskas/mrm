@@ -104,6 +104,8 @@ function getRunFunction(options = {}) {
 		return runYarn;
 	} else if (options.pnpm || isUsingPnpm()) {
 		return runPnpm;
+	} else if (options.bun || isUsingBun()) {
+		return runBun;
 	} else {
 		return runNpm;
 	}
@@ -187,6 +189,24 @@ function runPnpm(deps, options = {}, exec) {
 	].concat(deps);
 
 	return execCommand(exec, 'pnpm', args, {
+		stdio: options.stdio === undefined ? 'inherit' : options.stdio,
+		cwd: options.cwd,
+	});
+}
+
+/**
+ * Install or uninstall given Bun packages
+ *
+ * @param {string[]} deps
+ * @param {RunOptions} [options={}]
+ * @param {Function} [exec]
+ */
+function runBun(deps, options = {}, exec) {
+	const args = [
+		options.remove ? 'remove' : 'add',
+	].concat(deps);
+
+	return execCommand(exec, 'bun', args, {
 		stdio: options.stdio === undefined ? 'inherit' : options.stdio,
 		cwd: options.cwd,
 	});
@@ -306,6 +326,13 @@ function isUsingYarnBerry() {
  */
 function isUsingPnpm() {
 	return fs.existsSync('pnpm-lock.yaml');
+}
+
+/**
+ * Is project using Bun?
+ */
+function isUsingBun() {
+	return fs.existsSync('bun.lockb');
 }
 
 module.exports = {
